@@ -26,6 +26,9 @@ extern void scheduleTimeoutEvent(void *context, int32_t a);
 extern void clearTimeoutEvent(void *context, int32_t a);
 extern void copyBytesToGo (void *context, int32_t a);
 extern void copyBytesToJS (void *context, int32_t a);
+extern void resetMemoryDataView(void *context, int32_t a);
+extern void nanotime1(void *context, int32_t a);
+extern void walltime1(void *context, int32_t a);
 */
 import "C"
 import (
@@ -70,6 +73,12 @@ func nanotime(ctx unsafe.Pointer, sp int32) {
 	getBridge(ctx).setInt64(sp+8, n)
 }
 
+//export nanotime1
+func nanotime1(ctx unsafe.Pointer, sp int32) {
+	n := time.Now().UnixNano()
+	getBridge(ctx).setInt64(sp+8, n)
+}
+
 //export walltime
 func walltime(ctx unsafe.Pointer, sp int32) {
 	b := getBridge(ctx)
@@ -77,7 +86,18 @@ func walltime(ctx unsafe.Pointer, sp int32) {
 	nanos := t % int64(time.Second)
 	b.setInt64(sp+8, t/int64(time.Second))
 	b.setInt32(sp+16, int32(nanos))
+}
 
+//export resetMemoryDataView
+func resetMemoryDataView(ctx unsafe.Pointer, _ int32) {}
+
+//export walltime1
+func walltime1(ctx unsafe.Pointer, sp int32) {
+	b := getBridge(ctx)
+	t := time.Now().UnixNano()
+	nanos := t % int64(time.Second)
+	b.setInt64(sp+8, t/int64(time.Second))
+	b.setInt32(sp+16, int32(nanos))
 }
 
 //export scheduleCallback
@@ -302,6 +322,9 @@ func (b *Bridge) addImports(imps *wasmer.Imports) error {
 		{"runtime.getRandomData", getRandomData, C.getRandomData},
 		{"runtime.scheduleTimeoutEvent", scheduleTimeoutEvent, C.scheduleTimeoutEvent},
 		{"runtime.clearTimeoutEvent", clearTimeoutEvent, C.clearTimeoutEvent},
+		{"runtime.resetMemoryDataView", resetMemoryDataView, C.resetMemoryDataView},
+		{"runtime.nanotime1", nanotime1, C.nanotime1},
+		{"runtime.walltime1", walltime1, C.walltime1},
 		{"syscall/js.stringVal", stringVal, C.stringVal},
 		{"syscall/js.valueGet", valueGet, C.valueGet},
 		{"syscall/js.valueSet", valueSet, C.valueSet},
