@@ -1,4 +1,4 @@
-module github.com/vedhavyas/go-wasm
+module github.com/yargevad/go-wasm
 
 go 1.14
 
